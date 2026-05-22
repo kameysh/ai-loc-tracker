@@ -7,7 +7,7 @@
 
 /* ── Config ─────────────────────────────────────────────── */
 
-const DATA_URL         = './data/stats.json';
+const DATA_URL         = 'https://raw.githubusercontent.com/kameysh/ai-loc-tracker/main/data/stats.json';
 const REFRESH_INTERVAL = 60_000; // 60 s
 
 /* ── State ──────────────────────────────────────────────── */
