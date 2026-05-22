@@ -1,0 +1,89 @@
+{
+  "name": "ai-loc-tracker",
+  "displayName": "AI vs Human LoC Tracker",
+  "description": "Tracks AI (GitHub Copilot, Gemini Code Assist) vs Human lines of code in real-time and syncs to GitHub.",
+  "version": "0.1.0",
+  "publisher": "ai-loc-tracker",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "ai",
+    "copilot",
+    "gemini",
+    "loc",
+    "productivity",
+    "tracking"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "ai-loc-tracker.setToken",
+        "title": "AI LoC Tracker: Set GitHub Personal Access Token"
+      },
+      {
+        "command": "ai-loc-tracker.showStats",
+        "title": "AI LoC Tracker: Show Statistics"
+      },
+      {
+        "command": "ai-loc-tracker.acceptInlineSuggestion",
+        "title": "AI LoC Tracker: Accept Inline Suggestion (internal)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "ai-loc-tracker.acceptInlineSuggestion",
+        "key": "tab",
+        "when": "inlineSuggestionVisible && !editorHasSelection && !inSnippetMode"
+      }
+    ],
+    "configuration": {
+      "title": "AI LoC Tracker",
+      "properties": {
+        "aiLocTracker.githubRepo": {
+          "type": "string",
+          "default": "kameysh/ai-loc-tracker",
+          "description": "GitHub repository (owner/repo) to sync stats to."
+        },
+        "aiLocTracker.userName": {
+          "type": "string",
+          "default": "",
+          "description": "Your name (overrides git config user.name)."
+        },
+        "aiLocTracker.userEmail": {
+          "type": "string",
+          "default": "",
+          "description": "Your email (overrides git config user.email)."
+        },
+        "aiLocTracker.syncOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically sync stats to GitHub on file save."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "esbuild src/extension.ts --bundle --platform=node --outfile=dist/extension.js --external:vscode --sourcemap",
+    "compile:prod": "esbuild src/extension.ts --bundle --platform=node --outfile=dist/extension.js --external:vscode --minify",
+    "watch": "esbuild src/extension.ts --bundle --platform=node --outfile=dist/extension.js --external:vscode --sourcemap --watch",
+    "vscode:prepublish": "npm run compile:prod",
+    "package": "vsce package"
+  },
+  "dependencies": {
+    "@octokit/rest": "^20.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.19.0",
+    "typescript": "^5.3.0"
+  }
+}
