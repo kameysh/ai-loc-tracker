@@ -127,6 +127,13 @@ function processStats(data) {
       langMap[lang].gemini  += vals.gemini  || 0;
     }
   }
+  // Clamp language values — stored as running net, can go negative during editing
+  for (const vals of Object.values(langMap)) {
+    vals.human   = Math.max(0, vals.human);
+    vals.copilot = Math.max(0, vals.copilot);
+    vals.gemini  = Math.max(0, vals.gemini);
+    }
+  }
   const langRows = Object.entries(langMap)
     .map(([lang, vals]) => ({ lang, ...vals }))
     .sort((a, b) =>
@@ -146,9 +153,9 @@ function processStats(data) {
     for (const [date, vals] of Object.entries(u.dailyStats || {})) {
       const idx = days30.indexOf(date);
       if (idx === -1) continue;
-      timeline.human[idx]   += vals.human   || 0;
-      timeline.copilot[idx] += vals.copilot || 0;
-      timeline.gemini[idx]  += vals.gemini  || 0;
+      timeline.human[idx]   = Math.max(0, timeline.human[idx]   + (vals.human   || 0));
+      timeline.copilot[idx] = Math.max(0, timeline.copilot[idx] + (vals.copilot || 0));
+      timeline.gemini[idx]  = Math.max(0, timeline.gemini[idx]  + (vals.gemini  || 0));
     }
   }
 

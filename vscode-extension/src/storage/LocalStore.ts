@@ -126,12 +126,12 @@ export class LocalStore {
     if (!user.byLanguage[language]) {
       user.byLanguage[language] = { human: 0, copilot: 0, gemini: 0 };
     }
-    user.byLanguage[language][provider] = Math.max(0, user.byLanguage[language][provider] + net);
+    user.byLanguage[language][provider] += net;
 
     if (!user.dailyStats[date]) {
       user.dailyStats[date] = { human: 0, copilot: 0, gemini: 0 };
     }
-    user.dailyStats[date][provider] = Math.max(0, user.dailyStats[date][provider] + net);
+    user.dailyStats[date][provider] += net;
 
     this.save();
   }
@@ -155,12 +155,12 @@ export class LocalStore {
     if (!user.byLanguage[language]) {
       user.byLanguage[language] = { human: 0, copilot: 0, gemini: 0 };
     }
-    user.byLanguage[language].human = Math.max(0, user.byLanguage[language].human + net);
+    user.byLanguage[language].human += net;
 
     if (!user.dailyStats[date]) {
       user.dailyStats[date] = { human: 0, copilot: 0, gemini: 0 };
     }
-    user.dailyStats[date].human = Math.max(0, user.dailyStats[date].human + net);
+    user.dailyStats[date].human += net;
 
     this.save();
   }
