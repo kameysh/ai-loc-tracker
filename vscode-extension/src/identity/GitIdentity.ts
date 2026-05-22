@@ -17,7 +17,6 @@ export interface UserIdentity {
  */
 export class GitIdentity {
   private cached: UserIdentity | null = null;
-  private cached: UserIdentity | null = null;
   
 
   public async resolve(): Promise<UserIdentity> {
