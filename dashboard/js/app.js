@@ -132,7 +132,6 @@ function processStats(data) {
     vals.human   = Math.max(0, vals.human);
     vals.copilot = Math.max(0, vals.copilot);
     vals.gemini  = Math.max(0, vals.gemini);
-    }
   }
   const langRows = Object.entries(langMap)
     .map(([lang, vals]) => ({ lang, ...vals }))
