@@ -1,26 +1,11 @@
 import * as vscode from 'vscode';
 import { LocalStore } from '../storage/LocalStore';
 
-interface SessionStats {
-  humanNet: number;
-  copilotNet: number;
-  geminiNet: number;
-}
+const TODAY = () => new Date().toISOString().slice(0, 10);
 
-/**
- * Manages the VS Code status bar item showing real-time AI vs Human LoC counts.
- *
- * Display format: $(robot) AI: 234  $(person) Human: 456
- * Tooltip shows breakdown by Copilot vs Gemini.
- *
- * Updates:
- * - Immediately on each tracked change (via update())
- * - Every 30 seconds via a background interval
- */
 export class StatusBar implements vscode.Disposable {
   private readonly item: vscode.StatusBarItem;
   private readonly interval: ReturnType<typeof setInterval>;
-  private session: SessionStats = { humanNet: 0, copilotNet: 0, geminiNet: 0 };
   private syncStatus: 'ok' | 'warning' | 'syncing' = 'ok';
   private currentUserEmail: string | null = null;
 
@@ -35,8 +20,7 @@ export class StatusBar implements vscode.Disposable {
     this.render();
     this.item.show();
 
-    // Refresh every 30 seconds to keep totals current
-    this.interval = setInterval(() => this.render(), 30_000);
+    this.interval = setInterval(() => this.render(), 10_000);
   }
 
   public setCurrentUser(email: string): void {
@@ -44,21 +28,12 @@ export class StatusBar implements vscode.Disposable {
     this.render();
   }
 
-  public addAILines(
-    provider: 'copilot' | 'gemini',
-    linesAdded: number,
-    linesRemoved: number
-  ): void {
-    if (provider === 'copilot') {
-      this.session.copilotNet += linesAdded - linesRemoved;
-    } else {
-      this.session.geminiNet += linesAdded - linesRemoved;
-    }
+  // Called after every tracked change so the status bar re-reads the store
+  public addAILines(_provider: 'copilot' | 'gemini', _added: number, _removed: number): void {
     this.render();
   }
 
-  public addHumanLines(linesAdded: number, linesRemoved: number): void {
-    this.session.humanNet += linesAdded - linesRemoved;
+  public addHumanLines(_added: number, _removed: number): void {
     this.render();
   }
 
@@ -68,37 +43,44 @@ export class StatusBar implements vscode.Disposable {
   }
 
   private render(): void {
-    const aiTotal = Math.max(0, this.session.copilotNet + this.session.geminiNet);
-    const humanTotal = Math.max(0, this.session.humanNet);
+    // Read today's net directly from the local store — always in sync with what will be pushed
+    const today = TODAY();
+    let humanToday = 0, copilotToday = 0, geminiToday = 0;
+    let humanAllTime = 0, copilotAllTime = 0, geminiAllTime = 0;
 
-    // Build the status bar text
-    const syncIcon = this.syncStatusIcon();
-    this.item.text = `$(robot) AI: ${aiTotal}  $(person) Human: ${humanTotal}${syncIcon}`;
-
-    // Build the tooltip with breakdown
-    const lines: string[] = [
-      'AI vs Human LoC Tracker',
-      '',
-      `Session net lines:`,
-      `  Copilot: ${this.session.copilotNet} lines`,
-      `  Gemini:  ${this.session.geminiNet} lines`,
-      `  Human:   ${this.session.humanNet} lines`,
-    ];
-
-    // Add all-time totals if we have a user
     if (this.currentUserEmail) {
       const userStats = this.store.getUserStats(this.currentUserEmail);
       if (userStats) {
+        const day = userStats.dailyStats[today];
+        if (day) {
+          humanToday   = Math.max(0, day.human);
+          copilotToday = Math.max(0, day.copilot);
+          geminiToday  = Math.max(0, day.gemini);
+        }
         const t = userStats.totals;
-        lines.push(
-          '',
-          'All-time totals:',
-          `  Copilot: ${t.copilot.added} added / ${t.copilot.removed} removed`,
-          `  Gemini:  ${t.gemini.added} added / ${t.gemini.removed} removed`,
-          `  Human:   ${t.human.added} added / ${t.human.removed} removed`
-        );
+        humanAllTime   = Math.max(0, t.human.added   - t.human.removed);
+        copilotAllTime = Math.max(0, t.copilot.added - t.copilot.removed);
+        geminiAllTime  = Math.max(0, t.gemini.added  - t.gemini.removed);
       }
     }
+
+    const aiToday    = copilotToday + geminiToday;
+    const syncIcon   = this.syncStatusIcon();
+    this.item.text   = `$(robot) AI: ${aiToday}  $(person) Human: ${humanToday}${syncIcon}`;
+
+    const lines: string[] = [
+      'AI vs Human LoC Tracker',
+      '',
+      `Today (${today}):`,
+      `  Copilot: ${copilotToday} lines`,
+      `  Gemini:  ${geminiToday} lines`,
+      `  Human:   ${humanToday} lines`,
+      '',
+      'All-time net:',
+      `  Copilot: ${copilotAllTime} lines`,
+      `  Gemini:  ${geminiAllTime} lines`,
+      `  Human:   ${humanAllTime} lines`,
+    ];
 
     if (this.syncStatus === 'warning') {
       lines.push('', '⚠ GitHub sync failed — will retry on next save');
