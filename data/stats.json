@@ -1,5 +1,39 @@
 {
-  "lastUpdated": 1716400000000,
+  "lastUpdated": 1779455720283,
   "version": "1.0.0",
-  "users": {}
+  "users": {
+    "kameshwaran26@gmail.com": {
+      "name": "kamesh",
+      "email": "kameshwaran26@gmail.com",
+      "lastActive": 1779455577362,
+      "totals": {
+        "human": {
+          "added": 3,
+          "removed": 3
+        },
+        "copilot": {
+          "added": 0,
+          "removed": 0
+        },
+        "gemini": {
+          "added": 0,
+          "removed": 0
+        }
+      },
+      "byLanguage": {
+        "typescript": {
+          "human": 3,
+          "copilot": 0,
+          "gemini": 0
+        }
+      },
+      "dailyStats": {
+        "2026-05-22": {
+          "human": 3,
+          "copilot": 0,
+          "gemini": 0
+        }
+      }
+    }
+  }
 }
