@@ -5,7 +5,8 @@
       "Bash(npm install *)",
       "Bash(npm run *)",
       "Bash(curl -s \"https://kameysh.github.io/ai-loc-tracker/js/app.js\")",
-      "Bash(curl -sv \"https://raw.githubusercontent.com/kameysh/ai-loc-tracker/main/data/stats.json\")"
+      "Bash(curl -sv \"https://raw.githubusercontent.com/kameysh/ai-loc-tracker/main/data/stats.json\")",
+      "Bash(rm -f ~/.vscode/ai-loc-tracker/stats.json && echo \"cleared\")"
     ]
   }
 }
