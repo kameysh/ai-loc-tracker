@@ -71,7 +71,7 @@ export function activate(context: vscode.ExtensionContext): void {
       event.language
     );
 
-    statusBar.addAILines(event.source, event.linesAdded);
+    statusBar.addAILines(event.source, event.linesAdded, event.linesRemoved);
     pendingSync.hasPending = true;
   });
   context.subscriptions.push(aiAcceptSub);
@@ -89,7 +89,7 @@ export function activate(context: vscode.ExtensionContext): void {
       event.language
     );
 
-    statusBar.addHumanLines(event.linesAdded);
+    statusBar.addHumanLines(event.linesAdded, event.linesRemoved);
     pendingSync.hasPending = true;
   });
   context.subscriptions.push(humanSub);

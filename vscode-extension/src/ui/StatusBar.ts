@@ -2,9 +2,9 @@ import * as vscode from 'vscode';
 import { LocalStore } from '../storage/LocalStore';
 
 interface SessionStats {
-  humanAdded: number;
-  copilotAdded: number;
-  geminiAdded: number;
+  humanNet: number;
+  copilotNet: number;
+  geminiNet: number;
 }
 
 /**
@@ -20,7 +20,7 @@ interface SessionStats {
 export class StatusBar implements vscode.Disposable {
   private readonly item: vscode.StatusBarItem;
   private readonly interval: ReturnType<typeof setInterval>;
-  private session: SessionStats = { humanAdded: 0, copilotAdded: 0, geminiAdded: 0 };
+  private session: SessionStats = { humanNet: 0, copilotNet: 0, geminiNet: 0 };
   private syncStatus: 'ok' | 'warning' | 'syncing' = 'ok';
   private currentUserEmail: string | null = null;
 
@@ -46,18 +46,19 @@ export class StatusBar implements vscode.Disposable {
 
   public addAILines(
     provider: 'copilot' | 'gemini',
-    linesAdded: number
+    linesAdded: number,
+    linesRemoved: number
   ): void {
     if (provider === 'copilot') {
-      this.session.copilotAdded += linesAdded;
+      this.session.copilotNet += linesAdded - linesRemoved;
     } else {
-      this.session.geminiAdded += linesAdded;
+      this.session.geminiNet += linesAdded - linesRemoved;
     }
     this.render();
   }
 
-  public addHumanLines(linesAdded: number): void {
-    this.session.humanAdded += linesAdded;
+  public addHumanLines(linesAdded: number, linesRemoved: number): void {
+    this.session.humanNet += linesAdded - linesRemoved;
     this.render();
   }
 
@@ -67,8 +68,8 @@ export class StatusBar implements vscode.Disposable {
   }
 
   private render(): void {
-    const aiTotal = this.session.copilotAdded + this.session.geminiAdded;
-    const humanTotal = this.session.humanAdded;
+    const aiTotal = Math.max(0, this.session.copilotNet + this.session.geminiNet);
+    const humanTotal = Math.max(0, this.session.humanNet);
 
     // Build the status bar text
     const syncIcon = this.syncStatusIcon();
@@ -78,10 +79,10 @@ export class StatusBar implements vscode.Disposable {
     const lines: string[] = [
       'AI vs Human LoC Tracker',
       '',
-      `Session totals:`,
-      `  Copilot: ${this.session.copilotAdded} lines`,
-      `  Gemini:  ${this.session.geminiAdded} lines`,
-      `  Human:   ${this.session.humanAdded} lines`,
+      `Session net lines:`,
+      `  Copilot: ${this.session.copilotNet} lines`,
+      `  Gemini:  ${this.session.geminiNet} lines`,
+      `  Human:   ${this.session.humanNet} lines`,
     ];
 
     // Add all-time totals if we have a user

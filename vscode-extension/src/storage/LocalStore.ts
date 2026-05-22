@@ -120,17 +120,18 @@ export class LocalStore {
     user.totals[provider].removed += linesRemoved;
     user.lastActive = Date.now();
 
-    // Per-language
+    // Per-language and daily use net lines so deletions cancel additions
+    const net = linesAdded - linesRemoved;
+
     if (!user.byLanguage[language]) {
       user.byLanguage[language] = { human: 0, copilot: 0, gemini: 0 };
     }
-    user.byLanguage[language][provider] += linesAdded;
+    user.byLanguage[language][provider] = Math.max(0, user.byLanguage[language][provider] + net);
 
-    // Daily stats
     if (!user.dailyStats[date]) {
       user.dailyStats[date] = { human: 0, copilot: 0, gemini: 0 };
     }
-    user.dailyStats[date][provider] += linesAdded;
+    user.dailyStats[date][provider] = Math.max(0, user.dailyStats[date][provider] + net);
 
     this.save();
   }
@@ -149,17 +150,17 @@ export class LocalStore {
     user.totals.human.removed += linesRemoved;
     user.lastActive = Date.now();
 
-    // Per-language
+    const net = linesAdded - linesRemoved;
+
     if (!user.byLanguage[language]) {
       user.byLanguage[language] = { human: 0, copilot: 0, gemini: 0 };
     }
-    user.byLanguage[language].human += linesAdded;
+    user.byLanguage[language].human = Math.max(0, user.byLanguage[language].human + net);
 
-    // Daily stats
     if (!user.dailyStats[date]) {
       user.dailyStats[date] = { human: 0, copilot: 0, gemini: 0 };
     }
-    user.dailyStats[date].human += linesAdded;
+    user.dailyStats[date].human = Math.max(0, user.dailyStats[date].human + net);
 
     this.save();
   }

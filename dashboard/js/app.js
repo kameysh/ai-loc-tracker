@@ -93,13 +93,13 @@ function processStats(data) {
   const users       = Object.values(data.users || {});
   const hasUsers    = users.length > 0;
 
-  // ---- Aggregate totals across all users
+  // ---- Aggregate totals across all users (net = added - removed)
   let aggHuman = 0, aggCopilot = 0, aggGemini = 0;
   for (const u of users) {
     const t = u.totals || {};
-    aggHuman   += (t.human?.added   || 0);
-    aggCopilot += (t.copilot?.added || 0);
-    aggGemini  += (t.gemini?.added  || 0);
+    aggHuman   += Math.max(0, (t.human?.added   || 0) - (t.human?.removed   || 0));
+    aggCopilot += Math.max(0, (t.copilot?.added || 0) - (t.copilot?.removed || 0));
+    aggGemini  += Math.max(0, (t.gemini?.added  || 0) - (t.gemini?.removed  || 0));
   }
   const aggTotal = aggHuman + aggCopilot + aggGemini;
   const aggAI    = aggCopilot + aggGemini;
@@ -109,9 +109,9 @@ function processStats(data) {
     const t = u.totals || {};
     return {
       name:    u.name  || u.email,
-      human:   t.human?.added   || 0,
-      copilot: t.copilot?.added || 0,
-      gemini:  t.gemini?.added  || 0,
+      human:   Math.max(0, (t.human?.added   || 0) - (t.human?.removed   || 0)),
+      copilot: Math.max(0, (t.copilot?.added || 0) - (t.copilot?.removed || 0)),
+      gemini:  Math.max(0, (t.gemini?.added  || 0) - (t.gemini?.removed  || 0)),
     };
   }).sort((a, b) =>
     (b.human + b.copilot + b.gemini) - (a.human + a.copilot + a.gemini)
@@ -164,9 +164,9 @@ function processStats(data) {
       name:       u.name  || u.email,
       email:      u.email || '',
       lastActive: u.lastActive || 0,
-      human:      t.human?.added   || 0,
-      copilot:    t.copilot?.added || 0,
-      gemini:     t.gemini?.added  || 0,
+      human:   Math.max(0, (t.human?.added   || 0) - (t.human?.removed   || 0)),
+      copilot: Math.max(0, (t.copilot?.added || 0) - (t.copilot?.removed || 0)),
+      gemini:  Math.max(0, (t.gemini?.added  || 0) - (t.gemini?.removed  || 0)),
       sparkData,
     };
   });
